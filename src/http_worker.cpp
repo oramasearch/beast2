@@ -61,7 +61,10 @@ do_http_session()
         auto [ec] = co_await parser.read_header(stream);
         if(ec)
         {
-            std::cerr << "read_header error: " << ec.message() << "\n";
+            // An idle keep-alive connection closed by the client ends the
+            // stream; that is the normal end of a session, not an error.
+            if(ec != http::error::end_of_stream)
+                std::cerr << "read_header error: " << ec.message() << "\n";
             break;
         }
 
